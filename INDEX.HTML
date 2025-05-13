@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>직장인 증상 체커</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.6;
+            background-color: #f9fafb;
+            color: #333;
+        }
+        
+        .gradient-header {
+            background: linear-gradient(to right, #2563eb, #9333ea);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            max-width: 64rem;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .header-icon {
+            font-size: 2rem;
+        }
+        
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .container {
+            max-width: 64rem;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        
+        .disclaimer {
+            background-color: #fef3c7;
+            border-left: 4px solid #fbbf24;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0 0.5rem 0.5rem 0;
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .disclaimer-icon {
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        
+        .disclaimer-content h3 {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #92400e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .disclaimer-content p {
+            font-size: 0.875rem;
+            color: #92400e;
+            margin-bottom: 0.75rem;
+        }
+        
+        .disclaimer-button {
+            font-size: 0.875rem;
+            color: #92400e;
+            font-weight: 500;
+            background: none;
+            border: none;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        
+        .input-section {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .input-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .input-label {
+            font-weight: bold;
+            color: #374151;
+        }
+        
+        .quick-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .quick-btn {
+            padding: 0.5rem 1rem;
+            background-color: #f3f4f6;
+            border: none;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-btn:hover {
+            background-color: #2563eb;
+            color: white;
+        }
+        
+        .symptoms-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            resize: none;
+            min-height: 80px;
+            font-family: inherit;
+        }
+        
+        .check-button {
+            width: 100%;
+            background: linear-gradient(to right, #2563eb, #9333ea);
+            color: white;
+            font-weight: bold;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+        
+        .check-button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+        }
+        
+        .check-button:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            display: none;
+        }
+        
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 1rem;
+            border: 3px solid #e5e7eb;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .results {
+            display: none;
+        }
+        
+        .results-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .condition-card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 1rem;
+            transition: transform 0.2s;
+        }
+        
+        .condition-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .condition-urgent {
+            border-left: 4px solid #ef4444;
+        }
+        
+        .condition-medium {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .condition-low {
+            border-left: 4px solid #22c55e;
+        }
+        
+        .condition-content {
+            padding: 1.5rem;
+        }
+        
+        .condition-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+        
+        .condition-title-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .condition-icon {
+            font-size: 2rem;
+        }
+        
+        .condition-title {
+            font-size: 1.125rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .urgency-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .urgency-high {
+            background-color: #fee;
+            color: #dc2626;
+        }
+        
+        .urgency-medium {
+            background-color: #fef9c3;
+            color: #ca8a04;
+        }
+        
+        .urgency-low {
+            background-color: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .condition-description {
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+        
+        .condition-detail {
+            margin-bottom: 0.75rem;
+        }
+        
+        .condition-detail-label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.25rem;
+        }
+        
+        .symptom-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        
+        .symptom-tag {
+            padding: 0.25rem 0.75rem;
+            background-color: #dbeafe;
+            color: #1e40af;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+        }
+        
+        .recommendation-text {
+            color: #6b7280;
+        }
+        
+        .progress-section {
+            margin-top: 0.75rem;
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+        
+        .progress-label {
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .progress-percent {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            height: 0.625rem;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 0.625rem;
+            border-radius: 9999px;
+            transition: width 0.5s;
+        }
+        
+        .progress-fill-high {
+            background-color: #22c55e;
+        }
+        
+        .progress-fill-medium {
+            background-color: #eab308;
+        }
+        
+        .progress-fill-low {
+            background-color: #ef4444;
+        }
+        
+        .no-results {
+            background-color: #f3f4f6;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            text-align: center;
+            display: none;
+        }
+        
+        .no-results-text {
+            color: #6b7280;
+        }
+        
+        .footer-note {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background-color: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            border-radius: 0 0.5rem 0.5rem 0;
+        }
+        
+        .footer-note-text {
+            font-size: 0.875rem;
+            color: #1e40af;
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <div class="gradient-header">
+        <div class="header-content">
+            <span class="header-icon">❤️</span>
+            <h1 class="header-title">직장인 증상 체커</h1>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- 면책 조항 -->
+        <div class="disclaimer" id="disclaimer">
+            <span class="disclaimer-icon">⚠️</span>
+            <div class="disclaimer-content">
+                <h3>의학적 면책 조항</h3>
+                <p>이 도구는 의학적 조언이나 진단을 대체할 수 없습니다. 심각한 증상이 있거나 건강에 우려가 있을 경우 즉시 의료 전문가와 상담하세요.</p>
+                <button class="disclaimer-button" onclick="closeDisclaimer()">이해했습니다</button>
+            </div>
+        </div>
+
+        <!-- 입력 섹션 -->
+        <div class="input-section">
+            <div class="input-header">
+                <span>👤</span>
+                <label class="input-label">증상을 입력하세요</label>
+            </div>
+            
+            <!-- 빠른 선택 버튼들 -->
+            <div class="quick-buttons">
+                <button class="quick-btn" onclick="addSymptom('퇴근')">퇴근 후 증상</button>
+                <button class="quick-btn" onclick="addSymptom('피로')">만성피로</button>
+                <button class="quick-btn" onclick="addSymptom('두통')">두통</button>
+                <button class="quick-btn" onclick="addSymptom('목통증')">목/어깨 통증</button>
+                <button class="quick-btn" onclick="addSymptom('눈피로')">눈 피로</button>
+                <button class="quick-btn" onclick="addSymptom('손목통증')">손목 통증</button>
+                <button class="quick-btn" onclick="addSymptom('스트레스')">스트레스</button>
+                <button class="quick-btn" onclick="addSymptom('소화불량')">소화불량</button>
+            </div>
+
+            <textarea class="symptoms-textarea" id="symptoms" placeholder="예: 퇴근, 두통, 발열, 기침, 피로감"></textarea>
+            
+            <button class="check-button" id="checkBtn" onclick="checkSymptoms()">
+                <span>🔍</span>
+                증상 확인하기
+            </button>
+        </div>
+
+        <!-- 로딩 -->
+        <div class="loading" id="loading">
+            <div class="loading-spinner"></div>
+            <p>증상을 분석하고 있습니다...</p>
+        </div>
+
+        <!-- 결과 없음 -->
+        <div class="no-results" id="noResults">
+            <p class="no-results-text">일치하는 증상을 찾을 수 없습니다. 다른 증상을 입력하거나 의사와 상담하세요.</p>
+        </div>
+
+        <!-- 결과 표시 -->
+        <div class="results" id="results">
+            <h2 class="results-header">
+                <span>✅</span>
+                가능한 질병:
+            </h2>
+            
+            <div id="conditionsList"></div>
+            
+            <div class="footer-note">
+                <p class="footer-note-text">
+                    <strong>참고:</strong> 이 결과는 참고용일 뿐입니다. 정확한 진단을 위해 의사와 상담하세요.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 질병 데이터베이스
+        const medicalDatabase = [
+            {
+                symptoms: ['퇴근', '피로', '무기력', '집중력저하', '근육통'],
+                condition: '만성피로증후군',
+                description: '충분한 휴식에도 불구하고 지속되는 피로감을 특징으로 하는 증후군입니다. 직장인들에게 흔히 나타납니다.',
+                urgency: '중간',
+                recommendation: '규칙적인 운동, 충분한 수면, 스트레스 관리. 증상이 6개월 이상 지속되면 의사와 상담하세요.',
+                icon: '😴'
+            },
+            {
+                symptoms: ['퇴근', '두통', '목통증', '어깨통증', '조이는느낌'],
+                condition: '긴장성 두통',
+                description: '스트레스와 긴장으로 인해 머리가 조이는 듯한 통증을 느끼는 두통입니다. 퇴근 후 자주 발생합니다.',
+                urgency: '낮음-중간',
+                recommendation: '스트레칭, 온찜질, 마사지, 스트레스 관리. 진통제 복용 시 의사와 상담하세요.',
+                icon: '🤕'
+            },
+            {
+                symptoms: ['퇴근', '감정소진', '무기력', '업무효율저하', '우울'],
+                condition: '번아웃 증후군',
+                description: '과도한 업무 스트레스로 인한 정신적, 육체적 탈진 상태입니다.',
+                urgency: '중간',
+                recommendation: '충분한 휴식, 취미 활동, 상담 치료. 필요시 정신건강의학과 상담을 고려하세요.',
+                icon: '🔥'
+            },
+            {
+                symptoms: ['퇴근', '눈피로', '시야흐림', '눈건조', '두통'],
+                condition: '컴퓨터 시각 증후군',
+                description: '장시간 컴퓨터 사용으로 인한 눈의 피로와 관련 증상들입니다.',
+                urgency: '낮음',
+                recommendation: '20-20-20 규칙(20분마다 20초간 20피트 거리 바라보기), 인공눈물 사용, 모니터 밝기 조절.',
+                icon: '👁️'
+            },
+            {
+                symptoms: ['퇴근', '목통증', '어깨통증', '허리통증', '근육뭉침'],
+                condition: '근막동통증후군',
+                description: '잘못된 자세나 반복적인 동작으로 인한 근육과 근막의 통증입니다.',
+                urgency: '중간',
+                recommendation: '자세 교정, 스트레칭, 물리치료, 마사지. 통증이 지속되면 정형외과 진료를 받으세요.',
+                icon: '💪'
+            },
+            {
+                symptoms: ['퇴근', '다리무거움', '다리저림', '다리붓기', '정맥돌출'],
+                condition: '하지정맥류',
+                description: '오래 앉아있거나 서있는 직업에서 흔한 다리 정맥의 순환 장애입니다.',
+                urgency: '낮음-중간',
+                recommendation: '압박스타킹 착용, 다리 운동, 다리 올리기. 증상이 악화되면 혈관외과 진료를 받으세요.',
+                icon: '🦵'
+            },
+            {
+                symptoms: ['퇴근', '불안', '우울', '수면장애', '소화불량'],
+                condition: '직업성 스트레스 장애',
+                description: '업무 관련 스트레스가 신체적, 정신적 증상으로 나타나는 상태입니다.',
+                urgency: '중간',
+                recommendation: '스트레스 관리 프로그램, 규칙적인 운동, 충분한 수면. 필요시 상담치료를 고려하세요.',
+                icon: '😰'
+            },
+            {
+                symptoms: ['퇴근', '손목통증', '팔통증', '저림', '마우스사용'],
+                condition: '반복성 긴장 장애 (RSI)',
+                description: '반복적인 동작(타이핑, 마우스 사용)으로 인한 근골격계 장애입니다.',
+                urgency: '중간',
+                recommendation: '인체공학적 장비 사용, 주기적인 휴식, 스트레칭. 증상이 지속되면 의사와 상담하세요.',
+                icon: '✋'
+            },
+            {
+                symptoms: ['두통', '발열', '피로감', '근육통'],
+                condition: '독감',
+                description: '독감은 인플루엔자 바이러스에 의한 감염성 질환입니다.',
+                urgency: '중간',
+                recommendation: '휴식, 수분 섭취, 필요시 해열제. 증상이 악화되면 의사를 방문하세요.',
+                icon: '🤒'
+            },
+            {
+                symptoms: ['가슴 통증', '호흡 곤란', '발한', '현기증'],
+                condition: '심장 관련 문제 (응급)',
+                description: '이러한 증상은 심각한 심장 질환의 징후일 수 있습니다.',
+                urgency: '매우 높음',
+                recommendation: '즉시 응급실을 방문하거나 119에 전화하세요.',
+                icon: '🚨'
+            }
+        ];
+
+        // 면책 조항 닫기
+        function closeDisclaimer() {
+            document.getElementById('disclaimer').style.display = 'none';
+        }
+
+        // 증상 추가
+        function addSymptom(symptom) {
+            const textarea = document.getElementById('symptoms');
+            if (textarea.value) {
+                textarea.value += ', ' + symptom;
+            } else {
+                textarea.value = symptom;
+            }
+        }
+
+        // 증상 확인
+        function checkSymptoms() {
+            const symptomsInput = document.getElementById('symptoms');
+            const symptoms = symptomsInput.value.trim();
+            
+            if (!symptoms) {
+                alert('증상을 입력해주세요');
+                return;
+            }
+
+            // UI 상태 변경
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('noResults').style.display = 'none';
+            document.getElementById('checkBtn').disabled = true;
+
+            // 증상 분석 (1.5초 후 결과 표시)
+            setTimeout(() => {
+                analyzeSymptoms(symptoms);
+            }, 1500);
+        }
+
+        // 증상 분석
+        function analyzeSymptoms(symptoms) {
+            const userSymptoms = symptoms.toLowerCase().split(',').map(s => s.trim());
+            
+            // 증상 매칭
+            const matchedConditions = medicalDatabase.map(item => {
+                const matchedSymptoms = item.symptoms.filter(s => 
+                    userSymptoms.some(userS => 
+                        s.toLowerCase().includes(userS) || 
+                        userS.includes(s.toLowerCase())
+                    )
+                );
+                
+                return {
+                    ...item,
+                    matchCount: matchedSymptoms.length,
+                    matchPercentage: (matchedSymptoms.length / item.symptoms.length) * 100,
+                    matchedSymptoms
+                };
+            }).filter(item => item.matchCount > 0)
+              .sort((a, b) => b.matchPercentage - a.matchPercentage);
+            
+            // UI 업데이트
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('checkBtn').disabled = false;
+            
+            if (matchedConditions.length > 0) {
+                displayResults(matchedConditions);
+            } else {
+                document.getElementById('noResults').style.display = 'block';
+            }
+        }
+
+        // 결과 표시
+        function displayResults(conditions) {
+            const conditionsList = document.getElementById('conditionsList');
+            conditionsList.innerHTML = '';
+            
+            conditions.forEach(condition => {
+                const urgencyClass = condition.urgency === '매우 높음' ? 'condition-urgent' : 
+                                   (condition.urgency === '중간' || condition.urgency === '낮음-중간') ? 'condition-medium' : 
+                                   'condition-low';
+                
+                const urgencyBadgeClass = condition.urgency === '매우 높음' ? 'urgency-high' : 
+                                        (condition.urgency === '중간' || condition.urgency === '낮음-중간') ? 'urgency-medium' : 
+                                        'urgency-low';
+                
+                const urgencyIcon = condition.urgency === '매우 높음' ? '🚨' : 
+                                   (condition.urgency === '중간' || condition.urgency === '낮음-중간') ? '⚠️' : 
+                                   'ℹ️';
+                
+                const progressFillClass = condition.matchPercentage > 70 ? 'progress-fill-high' : 
+                                        condition.matchPercentage > 40 ? 'progress-fill-medium' : 
+                                        'progress-fill-low';
+                
+                const card = document.createElement('div');
+                card.className = `condition-card ${urgencyClass}`;
+                
+                card.innerHTML = `
+                    <div class="condition-content">
+                        <div class="condition-header">
+                            <div class="condition-title-area">
+                                <span class="condition-icon">${condition.icon}</span>
+                                <h3 class="condition-title">${condition.condition}</h3>
+                            </div>
+                            <span class="urgency-badge ${urgencyBadgeClass}">
+                                ${urgencyIcon}
+                                ${condition.urgency === '매우 높음' ? '응급' : condition.urgency}
+                            </span>
+                        </div>
+                        
+                        <p class="condition-description">${condition.description}</p>
+                        
+                        <div class="condition-detail">
+                            <p class="condition-detail-label">일치하는 증상:</p>
+                            <div class="symptom-tags">
+                                ${condition.matchedSymptoms.map(symptom => 
+                                    `<span class="symptom-tag">${symptom}</span>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="condition-detail">
+                            <p class="condition-detail-label">추천:</p>
+                            <p class="recommendation-text">${condition.recommendation}</p>
+                        </div>
+                        
+                        <div class="progress-section">
+                            <div class="progress-header">
+                                <p class="progress-label">일치율:</p>
+                                <span class="progress-percent">${Math.round(condition.matchPercentage)}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill ${progressFillClass}" style="width: ${Math.round(condition.matchPercentage)}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                conditionsList.appendChild(card);
+            });
+            
+            document.getElementById('results').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
